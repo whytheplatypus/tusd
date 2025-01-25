@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"github.com/tus/tusd/v2/pkg/redislocker"
 	"os"
 	"path/filepath"
 	"strings"
@@ -94,7 +95,10 @@ func CreateComposer() {
 		store.ObjectPrefix = Flags.GCSObjectPrefix
 		store.UseIn(Composer)
 
-		locker := memorylocker.New()
+		locker, err := redislocker.New("redis://127.0.0.1:6379")
+		if err != nil {
+			stdout.Fatal(err)
+		}
 		locker.UseIn(Composer)
 	} else if Flags.AzStorage != "" {
 
