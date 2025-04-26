@@ -13,6 +13,7 @@ func main() {
 	if cli.Flags.ShowVersion {
 		cli.ShowVersion()
 	} else {
+
 		cli.CreateComposer()
 		cli.Serve()
 	}

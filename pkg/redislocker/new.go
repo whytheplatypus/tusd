@@ -2,11 +2,13 @@ package redislocker
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-redsync/redsync/v4"
 	"github.com/go-redsync/redsync/v4/redis/goredis/v9"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/exp/slog"
 	"os"
+	"time"
 )
 
 type LockerOption func(l *RedisLocker)
@@ -18,11 +20,11 @@ func WithLogger(logger *slog.Logger) LockerOption {
 }
 
 func New(uri string, lockerOptions ...LockerOption) (*RedisLocker, error) {
-	connection, err := redis.ParseURL(uri)
-	if err != nil {
-		return nil, err
-	}
-	client := redis.NewClient(connection)
+	client := redis.NewClient(&redis.Options{
+		Addr:        uri,
+		DialTimeout: 20 * time.Second,
+	})
+	fmt.Println("redis ping:", client.Ping(context.Background()))
 	if res := client.Ping(context.Background()); res.Err() != nil {
 		return nil, res.Err()
 	}

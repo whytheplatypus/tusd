@@ -32,6 +32,7 @@ func CreateComposer() {
 		// Derive credentials from default credential chain (env, shared, ec2 instance role)
 		// as per https://github.com/aws/aws-sdk-go#configuring-credentials
 		s3Config, err := config.LoadDefaultConfig(context.Background())
+
 		if err != nil {
 			stderr.Fatalf("Unable to load S3 configuration: %s", err)
 		}
@@ -66,7 +67,14 @@ func CreateComposer() {
 		store.SetConcurrentPartUploads(Flags.S3ConcurrentPartUploads)
 		store.UseIn(Composer)
 
-		locker := memorylocker.New()
+		redisHost := os.Getenv("REDIS_HOST")
+		if redisHost == "" {
+			stderr.Fatalf("No redis host found for S3 Storage locker using the REDIS_HOST as environment variable.\n")
+		}
+		locker, err := redislocker.New(redisHost)
+		if err != nil {
+			stderr.Fatalf("Unable to create redis locker. %s\n", err)
+		}
 		locker.UseIn(Composer)
 
 		// Attach the metrics from S3 store to the global Prometheus registry
@@ -94,8 +102,7 @@ func CreateComposer() {
 		store := gcsstore.New(Flags.GCSBucket, service)
 		store.ObjectPrefix = Flags.GCSObjectPrefix
 		store.UseIn(Composer)
-
-		locker, err := redislocker.New("redis://127.0.0.1:6379")
+		locker := memorylocker.New()
 		if err != nil {
 			stdout.Fatal(err)
 		}
