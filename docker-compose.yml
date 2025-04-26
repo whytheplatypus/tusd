@@ -11,11 +11,11 @@ services:
       AWS_ACCESS_KEY_ID: "test-access"
       AWS_SECRET_ACCESS_KEY: "test-secret"
       AWS_REGION: "eu-west-1"
-      REDIS_HOST: "host.docker.internal:6379"
+      REDIS_HOST: "redis://host.docker.internal:6379"
     command: -s3-bucket mybucket -s3-object-prefix=videos/ -s3-endpoint http://host.docker.internal:9003
-      --hooks-http http://host.docker.internal:8005/api/v1/upload/handle-tusd-hooks
-      --hooks-enabled-events pre-create,pre-finish,post-finish
-      --hooks-http-forward-headers X-User-ID,Authorization
+#      --hooks-http http://host.docker.internal:8005/api/v1/upload/handle-tusd-hooks
+#      --hooks-enabled-events pre-create,pre-finish,post-finish
+#      --hooks-http-forward-headers X-User-ID,Authorization
     depends_on:
       - minio
   minio:
